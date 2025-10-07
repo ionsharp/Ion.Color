@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Ion.Color</id>
+    <version>1.0.0</version>
+    <authors>Ion</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">BSD-2-Clause</license>
+    <licenseUrl>https://licenses.nuget.org/BSD-2-Clause</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/ionsharp/Ion</projectUrl>
+    <description>Common elements for color management.</description>
+    <copyright>No rights reserved.</copyright>
+    <tags>ion core net wpf windows</tags>
+    <repository type="git" url="https://github.com/ionsharp/" commit="9f893431144b70e74ee44a006b2345335d517568" />
+    <dependencies>
+      <group targetFramework="net9.0">
+        <dependency id="Ion" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="InheritDoc" version="2.5.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="C:\Users\james\OneDrive\GitHub\Ion.Color\bin\Debug\net9.0\Ion.Color.dll" target="lib\net9.0\Ion.Color.dll" />
+    <file src="C:\Users\james\OneDrive\GitHub\Ion.Color\readme.md" target="\readme.md" />
+  </files>
+</package>

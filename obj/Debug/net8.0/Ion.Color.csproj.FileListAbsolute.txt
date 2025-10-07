@@ -1,0 +1,16 @@
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.csproj.AssemblyReference.cache
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.AssemblyInfoInputs.cache
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.AssemblyInfo.cs
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.csproj.CoreCompileInputs.cache
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.sourcelink.json
+C:\Users\james\OneDrive\GitHub\Core.Color\bin\Debug\net8.0\Ion.Color.deps.json
+C:\Users\james\OneDrive\GitHub\Core.Color\bin\Debug\net8.0\Ion.Color.dll
+C:\Users\james\OneDrive\GitHub\Core.Color\bin\Debug\net8.0\Ion.Color.pdb
+C:\Users\james\OneDrive\GitHub\Core.Color\bin\Debug\net8.0\Ion.dll
+C:\Users\james\OneDrive\GitHub\Core.Color\bin\Debug\net8.0\Ion.pdb
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.csproj.Up2Date
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.dll
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\refint\Ion.Color.dll
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\Ion.Color.pdb
+C:\Users\james\OneDrive\GitHub\Core.Color\obj\Debug\net8.0\ref\Ion.Color.dll
