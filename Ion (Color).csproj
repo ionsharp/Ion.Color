@@ -55,7 +55,7 @@
     <ProjectReference Include="..\Ion\Ion.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="readme.md">
+    <None Update="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

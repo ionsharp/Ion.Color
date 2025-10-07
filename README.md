@@ -1,6 +1,6 @@
-﻿Ion.Color ![](https://img.shields.io/badge/style-7.1-blue.svg?style=flat&label=Version)
+﻿Ion.Color ![](https://img.shields.io/badge/style-8.0-blue.svg?style=flat&label=Version)
 ---
-Color management for shared projects.
+...
 
 Models
 ---
@@ -116,7 +116,7 @@ Illuminants
 
 Wiki ![](https://img.shields.io/badge/style-Coming%20soon!-red.svg?style=flat&label=)
 ---
-For help or to find out more, head over to [the wiki](https://github.com/imagin-code/Ion.Color/wiki).
+For help, visit the [wiki](https://github.com/ionsharp/Ion.Color/wiki).
 
 Donate
 ---

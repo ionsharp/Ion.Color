@@ -16,7 +16,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCopyrightAttribute("No rights reserved.")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Common elements for color management.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+9f893431144b70e74ee44a006b2345335d517568")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+3b5a78607b75de1fa49cc1ad4e3ca5e7f7c49192")]
 [assembly: System.Reflection.AssemblyProductAttribute("Ion.Color")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Ion.Color")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
