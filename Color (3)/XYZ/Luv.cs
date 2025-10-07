@@ -1,13 +1,13 @@
-﻿using System;
-using static System.Double;
+﻿using Ion.Numeral;
+using System;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <para><b>Lightness (L*), u*, v*</b></para>
 /// <para>An Adams chromatic valence color model that attempts perceptual uniformity (successor to 'UVW').</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="Luv"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="Luv"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -21,15 +21,27 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-[Component(100, '%', "L*", "Lightness"), Component(-134, 224, ' ', "u*"), Component(-140, 122, ' ', "v*")]
-[Category(Class.XYZ), Serializable]
+[ColorOf<XYZ>]
+[Component(100, '%', "L*", "Lightness")]
+[Component(-134, 224, ' ', "u*")]
+[Component(-140, 122, ' ', "v*")]
+[ComponentGroup(ComponentGroup.Lightness)]
 [Description("An Adams chromatic valence color model that attempts perceptual uniformity (successor to 'UVW').")]
-public class Luv : ColorModel3<XYZ>
+public record class Luv(double L, double U, double V)
+    : Color3<Luv, double, XYZ>(L, U, V), IColor3<Luv, double>, System.Numerics.IMinMaxValue<Luv>
 {
-    public Luv() : base() { }
+    public static Luv MaxValue => new(100, +224, +122);
 
-    /// <summary>(🗸) <see cref="XYZ"/> > <see cref="Luv"/></summary>
-    public override void From(XYZ input, WorkingProfile profile)
+    public static Luv MinValue => new(0, -134, -140);
+
+    public Luv() : this(default, default, default) { }
+
+    public Luv(double luv) : this(luv, luv, luv) { }
+
+    public Luv(IVector3<double> luv) : this(luv.X, luv.Y, luv.Z) { }
+
+    /// <summary><see cref="XYZ"/> ⇒ <see cref="Luv"/></summary>
+    public override void From(in XYZ input, ColorProfile profile)
     {
         static double Compute_up(XYZ i) => 4 * i.X / (i.X + 15 * i.Y + 3 * i.Z);
         static double Compute_vp(XYZ i) => 9 * i.Y / (i.X + 15 * i.Y + 3 * i.Z);
@@ -38,36 +50,36 @@ public class Luv : ColorModel3<XYZ>
         var up = Compute_up(input);
         var vp = Compute_vp(input);
 
-        var upr = Compute_up((XYZ)(xyY)(xy)profile.Chromacity);
-        var vpr = Compute_vp((XYZ)(xyY)(xy)profile.Chromacity);
+        var upr = Compute_up((XYZ)(xyY)(XY)profile.Chromacity);
+        var vpr = Compute_vp((XYZ)(xyY)(XY)profile.Chromacity);
 
         var L = yr > CIE.IEpsilon ? 116 * Pow(yr, 1 / 3d) - 16 : CIE.IKappa * yr;
 
-        if (IsNaN(L) || L < 0)
+        if (double.IsNaN(L) || L < 0)
             L = 0;
 
         var u = 13 * L * (up - upr);
         var v = 13 * L * (vp - vpr);
 
-        if (IsNaN(u))
+        if (double.IsNaN(u))
             u = 0;
 
-        if (IsNaN(v))
+        if (double.IsNaN(v))
             v = 0;
 
-        Value = new(L, u, v);
+        XYZ = new(L, u, v);
     }
 
-    /// <summary>(🗸) <see cref="Luv"/> > <see cref="XYZ"/></summary>
-    public override void To(out XYZ result, WorkingProfile profile)
+    /// <summary><see cref="Luv"/> ⇒ <see cref="XYZ"/></summary>
+    public override void To(out XYZ result, ColorProfile profile)
     {
         static double Compute_u0(XYZ input) => 4 * input.X / (input.X + 15 * input.Y + 3 * input.Z);
         static double Compute_v0(XYZ input) => 9 * input.Y / (input.X + 15 * input.Y + 3 * input.Z);
 
-        double L = Value[0], u = Value[1], v = Value[2];
+        double L = XYZ.X, u = XYZ.Y, v = XYZ.Z;
 
-        var u0 = Compute_u0((XYZ)(xyY)(xy)profile.Chromacity);
-        var v0 = Compute_v0((XYZ)(xyY)(xy)profile.Chromacity);
+        var u0 = Compute_u0((XYZ)(xyY)(XY)profile.Chromacity);
+        var v0 = Compute_v0((XYZ)(xyY)(XY)profile.Chromacity);
 
         var Y = L > CIE.IKappa * CIE.IEpsilon
             ? Pow((L + 16) / 116, 3)
@@ -81,15 +93,15 @@ public class Luv : ColorModel3<XYZ>
         var X = (d - b) / (a - c);
         var Z = X * a + b;
 
-        if (IsNaN(X) || X < 0)
+        if (double.IsNaN(X) || X < 0)
             X = 0;
 
-        if (IsNaN(Y) || Y < 0)
+        if (double.IsNaN(Y) || Y < 0)
             Y = 0;
 
-        if (IsNaN(Z) || Z < 0)
+        if (double.IsNaN(Z) || Z < 0)
             Z = 0;
 
-        result = Colour.New<XYZ>(X, Y, Z);
+        result = IColor.New<XYZ>(X, Y, Z);
     }
 }

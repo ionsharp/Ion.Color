@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
+using System.Globalization;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Hybrid Log-Gamma (HLG)</b>
@@ -9,18 +11,12 @@ namespace Imagin.Core.Colors;
 /// <para><b>Rec. 2100</b></para>
 /// </summary>
 /// <remarks>https://en.wikipedia.org/wiki/Hybrid_log%E2%80%93gamma</remarks>
-[Name(name), Index(2), Serializable]
-[Description("")]
-public struct GammaLogCompression : ICompress
+[Name(Name)]
+public readonly record struct GammaLogCompression() : ICompress
 {
-    const string name = "Gamma (HLG)";
+    public const string Name = "Gamma (HLG)";
 
-    [Index(-1), ReadOnly, Show]
-    public string Name => name;
-
-    public GammaLogCompression() { }
-
-    public double Transfer(double E)
+    public readonly double Transfer(double E)
     {
         var r = 0.5;
 
@@ -34,7 +30,7 @@ public struct GammaLogCompression : ICompress
         return a * Log(E - b) + c; //1 < E
     }
 
-    public double TransferInverse(double E)
+    public readonly double TransferInverse(double E)
     {
         var a = 0.17883277;
         var b = 1 - 4 * a;
@@ -46,5 +42,11 @@ public struct GammaLogCompression : ICompress
         return a * Log(12 * E - b) + c; //1 / 12 < E <= 1
     }
 
-    public override string ToString() => name;
+    /// <see cref="IFormattable"/>
+
+    public readonly override string ToString() => ToString(NumberFormat.General, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format) => ToString(format, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format, IFormatProvider provider) => Name;
 }

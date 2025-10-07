@@ -1,33 +1,30 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
+using System.Globalization;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
+#pragma warning disable IDE1006
 /// <summary><b>Default</b></summary>
-[Name(name), Index(0), Serializable]
-[Description("")]
-public struct Compression : ICompress
+[Name(Name)]
+public readonly record struct Compression() : ICompress
 {
-    const string name = "Default";
+    public const string Name = "Default";
 
     /// <summary>γ</summary>
-    public double γ { get; private set; } = 12 / 5;
+    public readonly double γ { get; } = 12 / 5;
 
     /// <summary>α</summary>
-    public double α { get; private set; } = 0.055;
+    public readonly double α { get; } = 0.055;
 
     /// <summary>β</summary>
-    public double β { get; private set; } = 0.0031308;
+    public readonly double β { get; } = 0.0031308;
 
     /// <summary>δ</summary>
-    public double δ { get; private set; } = 12.92;
+    public readonly double δ { get; } = 12.92;
 
     /// <summary>βδ</summary>
-    public double βδ { get; private set; } = 0.04045;
-
-    [Index(-1), ReadOnly, Show]
-    public string Name => name;
-
-    public Compression() { }
+    public readonly double βδ { get; } = 0.04045;
 
     public Compression(double γ, double α, double β, double δ, double βδ) : this()
     {
@@ -54,19 +51,26 @@ public struct Compression : ICompress
 
     #endregion
 
-    public double Transfer(double channel)
+    public readonly double Transfer(double channel)
     {
         var v = channel;
         var V = v <= β ? δ * v : (α + 1) * Math.Pow(v, 1 / γ) - α;
         return V;
     }
 
-    public double TransferInverse(double channel)
+    public readonly double TransferInverse(double channel)
     {
         var V = channel;
         var v = V <= βδ ? V / δ : Math.Pow((V + α) / (α + 1), γ);
         return v;
     }
 
-    public override string ToString() => name;
+    /// <see cref="IFormattable"/>
+
+    public readonly override string ToString() => ToString(NumberFormat.General, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format) => ToString(format, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format, IFormatProvider provider) => Name;
 }
+#pragma warning restore

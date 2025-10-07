@@ -1,17 +1,17 @@
 ﻿using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
-/// <summary>Specifies a <see cref="Component"/> of a <see cref="ColorModel4"/>.</summary>
-[Flags, Serializable]
+/// <summary>A <see cref="Component"/> of <see cref="IColor4"/>.</summary>
+[Flags]
 public enum Component4
 {
-    /// <summary>Specifies the first <see cref="Component"/> of a <see cref="ColorModel4"/>.</summary>
+    /// <summary>The 1st <see cref="Component"/> of <see cref="IColor4"/>.</summary>
     X,
-    /// <summary>Specifies the second <see cref="Component"/> of a <see cref="ColorModel4"/>.</summary>
+    /// <summary>The 2nd <see cref="Component"/> of <see cref="IColor4"/>.</summary>
     Y,
-    /// <summary>Specifies the third <see cref="Component"/> of a <see cref="ColorModel4"/>.</summary>
+    /// <summary>The 3rd <see cref="Component"/> of <see cref="IColor4"/>.</summary>
     Z,
-    /// <summary>Specifies the fourth <see cref="Component"/> of a <see cref="ColorModel4"/>.</summary>
+    /// <summary>The 4th <see cref="Component"/> of <see cref="IColor4"/>.</summary>
     W
 }

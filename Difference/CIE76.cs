@@ -1,15 +1,12 @@
-﻿using System;
-using static System.Math;
+﻿using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>CIE Delta-E 1976 color difference formula.</summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-[Name("CIE Delta-E 1976"), Serializable]
-public class CIE76ColorDifference : IColorDifference<Lab>, IColorDifference
+[Name("CIE Delta-E 1976")]
+public record class CIE76ColorDifference() : IColorDifference<Lab>, IColorDifference
 {
-    public CIE76ColorDifference() { }
-
     /// <param name="a">Reference color.</param>
     /// <param name="b">Sample color.</param>
     /// <returns>Delta-E (1976) color difference.</returns>
@@ -24,5 +21,6 @@ public class CIE76ColorDifference : IColorDifference<Lab>, IColorDifference
         return distance;
     }
 
-    double IColorDifference.ComputeDifference(in ColorModel x, in ColorModel y) => ComputeDifference((Lab)x, (Lab)y);
+    /// <inheritdoc/>
+    double IColorDifference.ComputeDifference(in IColor x, in IColor y) => ComputeDifference((Lab)x, (Lab)y);
 }

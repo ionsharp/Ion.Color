@@ -1,16 +1,16 @@
-﻿namespace Imagin.Core.Colors;
+﻿namespace Ion.Colors;
 
-/// <summary>Computes distance between two colors.</summary>
-/// <remarks>https://github.com/tompazourek/Colourful</remarks>
-public interface IColorDifference<T> where T : ColorModel
-{
-    /// <summary>Computes distance between two colors.</summary>
-    double ComputeDifference(in T x, in T y);
-}
-
-/// <summary>Computes distance between two colors.</summary>
+/// <summary>Compute distance between two colors.</summary>
+/// <remarks><b>https://github.com/tompazourek/Colourful</b></remarks>
 public interface IColorDifference
 {
-    /// <summary>Computes distance between two colors.</summary>
-    double ComputeDifference(in ColorModel x, in ColorModel y);
+    /// <summary>Compute distance between two colors.</summary>
+    public double ComputeDifference(in IColor x, in IColor y);
+}
+
+/// <inheritdoc/>
+public interface IColorDifference<T> : IColorDifference where T : IColor
+{
+    /// <summary>Compute distance between two colors.</summary>
+    public double ComputeDifference(in T x, in T y);
 }

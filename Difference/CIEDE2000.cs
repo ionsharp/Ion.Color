@@ -1,22 +1,16 @@
-﻿using Imagin.Core.Numerics;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using static Imagin.Core.Numerics.M;
+﻿using Ion.Numeral;
+using static Ion.Numeral.Number;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>CIE Delta-E 2000 color difference formula.</summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-[Name("CIE Delta-E 2000"), Serializable]
-public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
+[Name("CIE Delta-E 2000")]
+public record class CIEDE2000ColorDifference() : IColorDifference<Lab>, IColorDifference
 {
-    public CIEDE2000ColorDifference() { }
-
-    // parametric weighting factors:
-    private const double k_H = 1;
-    private const double k_L = 1;
-    private const double k_C = 1;
+    /// Parametric weighting factors
+    private const double k_H = 1, k_L = 1, k_C = 1;
 
     /// <param name="x">Reference color.</param>
     /// <param name="y">Sample color.</param>
@@ -33,25 +27,26 @@ public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
         var dL_prime = y.X - x.X; // eq. (8)
         var dC_prime = C_prime1 - C_prime0; // eq. (9)
         var dh_prime = Calculate_dh_prime(in C_prime0, in C_prime1, in h_prime0, in h_prime1);
-        var dH_prime = 2 * Sqrt(C_prime0 * C_prime1) * SinDeg(dh_prime / 2); // eq. (11)
+        var dH_prime = 2 * Sqrt(C_prime0 * C_prime1) * (dh_prime / 2).DSin(); // eq. (11)
 
         // 3. Calculate CIEDE2000 Color-Difference dE00
         var L_prime_mean = (x.X + y.X) / 2; // eq. (12)
         var C_prime_mean = (C_prime0 + C_prime1) / 2; // eq. (13)
         var h_prime_mean = Calculate_h_prime_mean(in h_prime0, in h_prime1, in C_prime0, in C_prime1);
-        var T = 1 - 0.17 * CosDeg(h_prime_mean - 30) + 0.24 * CosDeg(2 * h_prime_mean)
-                                                     + 0.32 * CosDeg(3 * h_prime_mean + 6) - 0.20 * CosDeg(4 * h_prime_mean - 63); // eq. (15)
-        var dTheta = 30 * Exp(-Pow2((h_prime_mean - 275) / 25)); // eq. (16)
-        var R_C = 2 * Sqrt(Pow7(in C_prime_mean) / (Pow7(in C_prime_mean) + Pow7(x: 25))); // eq. (17)
-        var S_L = 1 + 0.015 * Pow2(L_prime_mean - 50) / Sqrt(20 + Pow2(L_prime_mean - 50)); // eq. (18)
+        var T = 1 - 0.17 * (h_prime_mean - 30).DCos() + 0.24 * (2 * h_prime_mean).DCos()
+            + 0.32 * (3 * h_prime_mean + 6).DCos() - 0.20 * (4 * h_prime_mean - 63).DCos(); // eq. (15)
+
+        var dTheta = 30 * Exp(-((h_prime_mean - 275) / 25).Pow2()); // eq. (16)
+        var R_C = 2 * ((C_prime_mean).Pow7() /((C_prime_mean).Pow7() + 25.Pow7())).Root2(); // eq. (17)
+        var S_L = 1 + 0.015 * (L_prime_mean - 50).Pow2() / Sqrt(20 + (L_prime_mean - 50).Pow2()); // eq. (18)
         var S_C = 1 + 0.045 * C_prime_mean; // eq. (19)
         var S_H = 1 + 0.015 * C_prime_mean * T; // eq. (20)
-        var R_T = -SinDeg(2 * dTheta) * R_C; // eq. (21)
+        var R_T = -(2 * dTheta).DSin() * R_C; // eq. (21)
 
         var dE00 = Sqrt(
-            Pow2(dL_prime / (k_L * S_L)) +
-            Pow2(dC_prime / (k_C * S_C)) +
-            Pow2(dH_prime / (k_H * S_H)) +
+            (dL_prime / (k_L * S_L)).Pow2() +
+            (dC_prime / (k_C * S_C)).Pow2() +
+            (dH_prime / (k_H * S_H)).Pow2() +
             R_T * (dC_prime / (k_C * S_C)) * (dH_prime / (k_H * S_H))
         ); // eq. (22)
 
@@ -70,7 +65,7 @@ public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
 
         var C_ab_mean = (C_ab0 + C_ab1) / 2; // eq. (3)
 
-        var G = 0.5d * (1 - Sqrt(Pow7(in C_ab_mean) / (Pow7(in C_ab_mean) + Pow7(x: 25)))); // eq. (4)
+        var G = 0.5d * (1 - Sqrt((C_ab_mean).Pow7() / ((C_ab_mean).Pow7() + 25.Pow7()))); // eq. (4)
 
         a_prime0 = (1 + G) * a0; // eq. (5)
         a_prime1 = (1 + G) * a1;
@@ -96,15 +91,14 @@ public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
     {
         // eq. (7)
         var hRadians = Atan2(b0, a_prime0);
-        var hDegrees = Angle.NormalizeDegree(Angle.GetDegree(hRadians));
+        var hDegrees = new Angle(hRadians, AngleType.Radian).Convert(AngleType.Degree);
         h_prime0 = hDegrees;
 
         hRadians = Atan2(b1, a_prime1);
-        hDegrees = Angle.NormalizeDegree(Angle.GetDegree(hRadians));
+        hDegrees = new Angle(hRadians, AngleType.Radian).Convert(AngleType.Degree);
         h_prime1 = hDegrees;
     }
 
-    [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
     private static double Calculate_dh_prime(in double C_prime0, in double C_prime1, in double h_prime0, in double h_prime1)
     {
         // eq. (10)
@@ -122,7 +116,6 @@ public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
         return delta + 360;
     }
 
-    [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
     private static double Calculate_h_prime_mean(in double h_prime0, in double h_prime1, in double C_prime0, in double C_prime1)
     {
         // eq. (14)
@@ -142,5 +135,6 @@ public class CIEDE2000ColorDifference : IColorDifference<Lab>, IColorDifference
         return (sum - 360) / 2;
     }
 
-    double IColorDifference.ComputeDifference(in ColorModel x, in ColorModel y) => ComputeDifference((Lab)x, (Lab)y);
+    /// <inheritdoc/>
+    double IColorDifference.ComputeDifference(in IColor x, in IColor y) => ComputeDifference((Lab)x, (Lab)y);
 }

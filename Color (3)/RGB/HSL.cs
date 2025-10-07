@@ -1,15 +1,14 @@
-﻿using Imagin.Core.Linq;
-using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
 
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Hue (H), Saturation (S), Lightness (L)</b>
 /// <para>A model similar to 'HSB' where 'Lightness' (a perfectly light color is pure white) replaces 'Brightness' (a perfectly bright color is analogous to shining a white light on a colored object).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="HSL"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="HSL"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -18,19 +17,31 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://github.com/colorjs/color-space/blob/master/hsl.js</remarks>
-[Component(360, '°', "H", "Hue"), Component(100, '%', "S", "Saturation"), Component(100, '%', "L", "Lightness")]
-[Category(Class.HS), Class(Class.H | Class.HS), Serializable]
+[ColorOf<Lrgb>]
+[Component(360, '°', "H", "Hue")]
+[Component(100, '%', "S", "Saturation")]
+[Component(100, '%', "L", "Lightness")]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HS | ComponentGroup.Lightness | ComponentGroup.SL)]
 [Description("A model similar to 'HSB' where 'Lightness' (a perfectly light color is pure white) replaces 'Brightness' (a perfectly bright color is analogous to shining a white light on a colored object).")]
-public class HSL : ColorModel3
+public record class HSL(double H, double S, double L)
+    : Color3<HSL, double>(H, S, L), IColor3<HSL, double>, System.Numerics.IMinMaxValue<HSL>
 {
-    public HSL() : base() { }
+    public static HSL MaxValue => new(360, 100, 100);
 
-    /// <summary>(🗸) <see cref="HSL"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    public static HSL MinValue => new(0);
+
+    public HSL() : this(default, default, default) { }
+
+    public HSL(double hsl) : this(hsl, hsl, hsl) { }
+
+    public HSL(IVector3<double> hsl) : this(hsl.X, hsl.Y, hsl.Z) { }
+
+    /// <summary><see cref="HSL"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
     {
-        var max = Colour.Maximum<HSL>();
+        var max = (Vector3)MaxValue;
 
-        double h = Value[0] / 60.0, s = Value[1] / max[1], l = Value[2] / max[2];
+        double h = XYZ.X / 60.0, s = XYZ.Y / max.Y, l = XYZ.Z / max.Z;
 
         double r = l, g = l, b = l;
 
@@ -71,16 +82,16 @@ public class HSL : ColorModel3
             b = result[2] + m;
         }
 
-        return Colour.New<Lrgb>(r, g, b);
+        return IColor.New<Lrgb>(r, g, b);
     }
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="HSL"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="HSL"/></summary>
+    public override void From(in Lrgb input, ColorProfile profile)
     {
-        var max = Colour.Maximum<HSL>();
+        var max = (Vector3)MaxValue;
 
-        var m = Max(Max(input.Value[0], input.Value[1]), input.Value[2]);
-        var n = Min(Min(input.Value[0], input.Value[1]), input.Value[2]);
+        var m = Max(Max(input.XYZ.X, input.XYZ.Y), input.XYZ.Z);
+        var n = Min(Min(input.XYZ.X, input.XYZ.Y), input.XYZ.Z);
 
         var chroma = m - n;
 
@@ -93,23 +104,23 @@ public class HSL : ColorModel3
                 ? chroma / (2.0 * l)
                 : chroma / (2.0 - 2.0 * l);
 
-            if (input.Value[0] == m)
+            if (input.XYZ.X == m)
             {
-                h = (input.Value[1] - input.Value[2]) / chroma;
-                h = input.Value[1] < input.Value[2]
+                h = (input.XYZ.Y - input.XYZ.Z) / chroma;
+                h = input.XYZ.Y < input.XYZ.Z
                 ? h + 6.0
                 : h;
             }
-            else if (input.Value[2] == m)
+            else if (input.XYZ.Z == m)
             {
-                h = 4.0 + ((input.Value[0] - input.Value[1]) / chroma);
+                h = 4.0 + ((input.XYZ.X - input.XYZ.Y) / chroma);
             }
-            else if (input.Value[1] == m)
-                h = 2.0 + ((input.Value[2] - input.Value[0]) / chroma);
+            else if (input.XYZ.Y == m)
+                h = 2.0 + ((input.XYZ.Z - input.XYZ.X) / chroma);
 
             h *= 60;
         }
 
-        Value = new(h, s * max[1], l * max[2]);
+        XYZ = new(h, s * max.Y, l * max.Z);
     }
 }

@@ -1,44 +1,59 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Cyan (C), Magenta (M), Yellow (Y), White (W)</b>
 /// <para>A subtractive model where the secondary colors are added with white.</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="CMYW"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="CMYW"/></para>
 /// </summary>
-[Component(100, "C", "Cyan"), Component(100, "M", "Magenta"), Component(100, "Y", "Yellow"), Component(100, "W", "White")]
-[Category(Class.CMY), Serializable]
+[ColorOf<Lrgb>]
+[Component(100, "C", "Cyan")]
+[Component(100, "M", "Magenta")]
+[Component(100, "Y", "Yellow")]
+[Component(100, "W", "White")]
+[ComponentGroup(ComponentGroup.CMY)]
 [Description("A subtractive model where the secondary colors are added with white.")]
-public sealed class CMYW : ColorModel4
+public sealed record class CMYW(double C, double M, double Y, double W)
+    : Color4<CMYW, double>(C, M, Y, W), IColor4<CMYW, double>, System.Numerics.IMinMaxValue<CMYW>
 {
-    public CMYW() : base() { }
+    public static CMYW MaxValue => new(100);
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="CMYW"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
+    public static CMYW MinValue => new(0);
+
+    public CMYW() : this(default, default, default, default) { }
+
+    public CMYW(double cmyw) : this(cmyw, cmyw, cmyw, cmyw) { }
+
+    public CMYW(double c, double m, double y) : this(c, m, y, default) { }
+
+    public CMYW(in IVector3<double> cmy) : this(cmy.X, cmy.Y, cmy.Z, default) { }
+
+    public CMYW(in IVector4<double> cmyw) : this(cmyw.X, cmyw.Y, cmyw.Z, cmyw.W) { }
+
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="CMYW"/></summary>
+    public override void From(in Lrgb i, ColorProfile profile)
     {
-        var r = input.X; var g = input.Y; var b = input.Z;
+        var r = i.X; var g = i.Y; var b = i.Z;
         var w = Min(r, Min(g, b));
 
         r -= w; r /= 1 - w;
         g -= w; g /= 1 - w;
         b -= w; b /= 1 - w;
-        Value = new Vector4(1 - r, 1 - g, 1 - b, w) * 100;
+
+        XYZW = new Vector4<Double1>(1 - r, 1 - g, 1 - b, w).Denormalize(MinValue, MaxValue);
     }
 
-    /// <summary>(🗸) <see cref="CMYW"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    /// <summary><see cref="CMYW"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
     {
-        double r = (100 - X) / 100;
-        double g = (100 - Y) / 100;
-        double b = (100 - Z) / 100;
-        double w = W / 100;
-
+        var result = XYZW.New<Vector4<double>, double>(i => 100 - i).Normalize(MinValue, MaxValue);
+        Double1 r =  result.X, g = result.Y, b = result.Z, w = result.W;
         r *= (1 - w); r += w;
         g *= (1 - w); g += w;
         b *= (1 - w); b += w;
-        return Colour.New<Lrgb>(r, g, b);
+        return new(r, g, b);
     }
 }

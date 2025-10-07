@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
+using System.Globalization;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Perceptual Quantization (PQ)</b>
@@ -10,18 +12,12 @@ namespace Imagin.Core.Colors;
 /// <para><b>SMPTE ST 2084</b></para>
 /// </summary>
 /// <remarks>https://en.wikipedia.org/wiki/Perceptual_quantizer</remarks>
-[Name(name), Index(3), Serializable]
-[Description("")]
-public struct PQCompression : ICompress
+[Name(Name)]
+public readonly record struct PQCompression() : ICompress
 {
-    const string name = "PQ";
+    public const string Name = "PQ";
 
-    [Index(-1), ReadOnly, Show]
-    public string Name => name;
-
-    public PQCompression() { }
-
-    public double Transfer(double E)
+    public readonly double Transfer(double E)
     {
         var c2 = 18.8515625;
         var c3 = 18.6875;
@@ -31,7 +27,7 @@ public struct PQCompression : ICompress
         return 10000 * Max(Pow(E, 1 / m2) - c1, 0) / (c2 - c3 * Pow(E, 1 / m2));
     }
 
-    public double TransferInverse(double Y)
+    public readonly double TransferInverse(double Y)
     {
         var c2 = 18.8515625;
         var c3 = 18.6875;
@@ -43,5 +39,11 @@ public struct PQCompression : ICompress
         return Pow(c1 + c2 * Pow(Y, m1) / (1 + c3 * Pow(Y, m1)), m2);
     }
 
-    public override string ToString() => name;
+    /// <see cref="IFormattable"/>
+
+    public readonly override string ToString() => ToString(NumberFormat.General, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format) => ToString(format, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format, IFormatProvider provider) => Name;
 }

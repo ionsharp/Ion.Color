@@ -1,18 +1,17 @@
-﻿using Imagin.Core.Numerics;
-using System;
-using static Imagin.Core.Colors.CMCColorDifferenceThreshold;
-using static Imagin.Core.Numerics.M;
+﻿using Ion.Numeral;
+using static Ion.Colors.CMCColorDifferenceThreshold;
+using static Ion.Numeral.Number;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>CMC l:c (1984) color difference formula.</summary>
 /// <remarks>
 /// <para>https://github.com/tompazourek/Colourful</para>
 /// <para>http://www.Zrucelindbloom.com/index.html?Eqn_DeltaE_CMC.html</para>
 /// </remarks>
-[Name("CMC l:c (1984)"), Serializable]
-public class CMCColorDifference : IColorDifference<Lab>, IColorDifference
+[Name("CMC l:c (1984)")]
+public record class CMCColorDifference : IColorDifference<Lab>, IColorDifference
 {
     /// <summary>Chroma.</summary>
     private readonly double _c;
@@ -32,7 +31,7 @@ public class CMCColorDifference : IColorDifference<Lab>, IColorDifference
         _c = chroma;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public double ComputeDifference(in Lab x, in Lab y)
     {
         double L1 = x.X, a1 = x.Y, b1 = x.Z;
@@ -48,14 +47,14 @@ public class CMCColorDifference : IColorDifference<Lab>, IColorDifference
 
         var dH_pow2 = da * da + db * db - dC * dC;
         var H1_rad = Atan2(b1, a1);
-        var H1 = Angle.NormalizeDegree(Angle.GetDegree(H1_rad));
+        var H1 = new Angle(H1_rad, AngleType.Radian).Convert(AngleType.Degree);
 
-        var C1_pow4 = Pow4(in C1);
+        var C1_pow4 = Pow(C1, 4);
         var F = Sqrt(C1_pow4 / (C1_pow4 + 1900));
 
         var T = H1 >= 164 && H1 <= 345
-            ? 0.56 + Abs(0.2 * CosDeg(H1 + 168))
-            : 0.36 + Abs(0.4 * CosDeg(H1 + 35));
+            ? 0.56 + Abs(0.2 * (H1 + 168).DCos())
+            : 0.36 + Abs(0.4 * (H1 +  35).DCos());
 
         var SC = 0.0638 * C1 / (1 + 0.0131 * C1) + 0.638;
         var SL = L1 < 16
@@ -72,5 +71,6 @@ public class CMCColorDifference : IColorDifference<Lab>, IColorDifference
         return dE;
     }
 
-    double IColorDifference.ComputeDifference(in ColorModel x, in ColorModel y) => ComputeDifference((Lab)x, (Lab)y);
+    /// <inheritdoc/>
+    double IColorDifference.ComputeDifference(in IColor x, in IColor y) => ComputeDifference((Lab)x, (Lab)y);
 }

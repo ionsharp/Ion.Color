@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Luminance (L), Chroma (C), Hue (H)</b>
 /// <para>A cylindrical form of 'Labh' that is designed to accord with the human perception of color.</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="Labh"/> > <see cref="LCHabh"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="Labh"/> ⇒ <see cref="LCHabh"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -13,9 +14,18 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-[Category(Class.LCH), Serializable]
+[ComponentGroup(ComponentGroup.LCH)]
 [Description("A cylindrical form of 'Labh' that is designed to accord with the human perception of color.")]
-public class LCHabh : LCH<Labh>
+public record class LCHabh(double X, double Y, double Z)
+    : LCH<LCHabh, Labh>(X, Y, Z), IColor3<LCHabh, double>, System.Numerics.IMinMaxValue<LCHabh>
 {
-    public LCHabh() : base() { }
+    public static LCHabh MaxValue => new(100, 100, 360);
+
+    public static LCHabh MinValue => new(0);
+
+    public LCHabh() : this(default, default, default) { }
+
+    public LCHabh(double lch) : this(lch, lch, lch) { }
+
+    public LCHabh(IVector3<double> lch) : this(lch.X, lch.Y, lch.Z) { }
 }

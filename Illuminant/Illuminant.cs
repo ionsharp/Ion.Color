@@ -1,6 +1,6 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// Represents a theoretical source of visible light with a published profile.
@@ -12,7 +12,7 @@ namespace Imagin.Core.Colors;
 public static class Illuminant
 {
     /// <summary>An arbitrary illuminant when none is specified (<see cref="Illuminant2.D65"/>).</summary>
-    public static XYZ Default => Colour.New<xy>(Illuminant2.D65).To<XYZ>(default);
+    public static XYZ Default => IColor.New<XY>(Illuminant2.D65).To<XYZ>(default);
 
     /// <summary> Equal energy (<see cref="Illuminant">5454</see> K).</summary>
     [Description("Equal energy")]

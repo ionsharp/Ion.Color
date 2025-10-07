@@ -1,18 +1,27 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Luminance (L), Chroma (C), Hue (H)</b>
 /// <para>A cylindrical form of 'rgG' that is designed to accord with the human perception of color.</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="rgG"/> > <see cref="LCHrg"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="rgG"/> ⇒ <see cref="LCHrg"/></para>
 /// </summary>
-[Category(Class.LCH), Serializable]
+[ComponentGroup(ComponentGroup.LCH)]
 [Description("A cylindrical form of 'rgG' that is designed to accord with the human perception of color.")]
-public class LCHrg : LCH<rgG>
+public record class LCHrg(double X, double Y, double Z)
+    : LCH<LCHrg, rgG>(X, Y, Z), IColor3<LCHrg, double>, System.Numerics.IMinMaxValue<LCHrg>
 {
-    public LCHrg() : base() { }
+    public static LCHrg MaxValue => new(100, 100, 360);
+
+    public static LCHrg MinValue => new(0);
+
+    public LCHrg() : this(default, default, default) { }
+
+    public LCHrg(double lch) : this(lch, lch, lch) { }
+
+    public LCHrg(IVector3<double> lch) : this(lch.X, lch.Y, lch.Z) { }
 
     /// <inheritdoc/>
     public override Vector3 ToLCh(Vector3 input)

@@ -1,8 +1,10 @@
-﻿namespace Imagin.Core.Colors;
+﻿using System;
+
+namespace Ion.Colors;
 
 /// <summary>Functions used for conversion to <see cref="XYZ"/> and back.</summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-public interface ICompress
+public interface ICompress : IFormattable
 {
     /// <summary>The compressed/companded channel (non linear) is made linear with respect to the energy.</summary>
     /// <remarks>Non Linear (Compressed/Companded) > Linear (Uncompressed/Uncompanded)</remarks>

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <para><b>U, C (V), S (W)</b></para>
 /// <para>A model that defines color as having chroma (U), chroma (C), and luminance (S).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="UCS"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="UCS"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -22,24 +23,36 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://github.com/colorjs/color-space/blob/master/ucs.js</remarks>
-[Component(1, "U"), Component(1, '%', "C", "V"), Component(1, '%', "S", "W")]
-[Category(Class.XYZ), Serializable]
+[ColorOf<XYZ>]
+[Component(1, "U")]
+[Component(1, '%', "C", "V")]
+[Component(1, '%', "S", "W")]
+[ComponentGroup(ComponentGroup.Luminance)]
 [Description("A model that defines color as having chroma (U), chroma (C), and luminance (S).")]
-public class UCS : ColorModel3<XYZ>
+public record class UCS(double U, double C, double S)
+    : Color3<UCS, double, XYZ>(U, C, S), IColor3<UCS, double>, System.Numerics.IMinMaxValue<UCS>
 {
-    public UCS() : base() { }
+    public static UCS MaxValue => new(1);
 
-    /// <summary>(🗸) <see cref="XYZ"/> > <see cref="UCS"/></summary>
-    public override void From(XYZ input, WorkingProfile profile)
+    public static UCS MinValue => new(0);
+
+    public UCS() : this(default, default, default) { }
+
+    public UCS(double ucs) : this(ucs, ucs, ucs) { }
+
+    public UCS(IVector3<double> ucs) : this(ucs.X, ucs.Y, ucs.Z) { }
+
+    /// <summary><see cref="XYZ"/> ⇒ <see cref="UCS"/></summary>
+    public override void From(in XYZ input, ColorProfile profile)
     {
         double x = input.X, y = input.Y, z = input.Z;
-        Value = new(x * 2 / 3, y, 0.5 * (-x + 3 * y + z));
+        XYZ = new(x * 2 / 3, y, 0.5 * (-x + 3 * y + z));
     }
 
-    /// <summary>(🗸) <see cref="UCS"/> > <see cref="XYZ"/></summary>
-    public override void To(out XYZ result, WorkingProfile profile)
+    /// <summary><see cref="UCS"/> ⇒ <see cref="XYZ"/></summary>
+    public override void To(out XYZ result, ColorProfile profile)
     {
         double u = X, v = Y, w = Z;
-        result = Colour.New<XYZ>(1.5 * u, v, 1.5 * u - 3 * v + 2 * w);
+        result = IColor.New<XYZ>(1.5 * u, v, 1.5 * u - 3 * v + 2 * w);
     }
 }

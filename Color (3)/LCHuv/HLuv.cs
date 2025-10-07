@@ -1,25 +1,22 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 using System.Collections.Generic;
-using static System.Double;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
-[Category(Class.LCHuv), Serializable]
-public abstract class HLuv : ColorModel3<LCHuv>
+[ColorOf<LCHuv>]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HS)]
+public abstract record class HLuv<TSelf>(double X, double Y, double Z)
+    : Color3<TSelf, double, LCHuv>(X, Y, Z)
+    where TSelf : System.Numerics.IMinMaxValue<TSelf>, IColor3<TSelf, double>
 {
-    protected static double[][] M = new double[][]
-   {
-        new double[] {  3.240969941904521, -1.537383177570093, -0.498610760293    },
-        new double[] { -0.96924363628087,   1.87596750150772,   0.041555057407175 },
-        new double[] {  0.055630079696993, -0.20397695888897,   1.056971514242878 },
-   };
-
-    ///
-
-    public HLuv() : base() { }
-
-    ///
+    protected static readonly Matrix3x3<double> M = new
+    (
+         3.240969941904521, -1.537383177570093, -0.498610760293000,
+        -0.969243636280870,  1.875967501507720,  0.041555057407175,
+         0.055630079696993, -0.203976958888970,  1.056971514242878
+    );
 
     protected static IList<double[]> GetBounds(double L)
     {
@@ -30,9 +27,9 @@ public abstract class HLuv : ColorModel3<LCHuv>
 
         for (int c = 0; c < 3; ++c)
         {
-            var m1 = M[c][0];
-            var m2 = M[c][1];
-            var m3 = M[c][2];
+            var m1 = M[c, 0];
+            var m2 = M[c, 1];
+            var m3 = M[c, 2];
 
             for (int t = 0; t < 2; ++t)
             {
@@ -40,7 +37,7 @@ public abstract class HLuv : ColorModel3<LCHuv>
                 var top2 = (838422 * m3 + 769860 * m2 + 731718 * m1) * L * sub2 - 769860 * t * L;
                 var bottom = (632260 * m3 - 126452 * m2) * sub2 + 126452 * t;
 
-                result.Add(new double[] { top1 / bottom, top2 / bottom });
+                result.Add([top1 / bottom, top2 / bottom]);
             }
         }
 
@@ -50,7 +47,7 @@ public abstract class HLuv : ColorModel3<LCHuv>
     protected static double GetChroma(double L)
     {
         var bounds = GetBounds(L);
-        double min = MaxValue;
+        double min = double.MaxValue;
 
         for (int i = 0; i < 2; ++i)
         {
@@ -58,8 +55,8 @@ public abstract class HLuv : ColorModel3<LCHuv>
             var b1 = bounds[i][1];
             var line = new double[] { m1, b1 };
 
-            double x = GetIntersection(line, new double[] { -1 / m1, 0 });
-            double length = GetDistance(new double[] { x, b1 + x * m1 });
+            double x = GetIntersection(line, [-1 / m1, 0]);
+            double length = GetDistance([x, b1 + x * m1]);
 
             min = Min(min, length);
         }
@@ -72,7 +69,7 @@ public abstract class HLuv : ColorModel3<LCHuv>
         double hrad = H / 360 * PI * 2;
 
         var bounds = GetBounds(L);
-        double min = MaxValue;
+        double min = double.MaxValue;
         foreach (var bound in bounds)
         {
             if (GetRayLength(hrad, bound, out double length))

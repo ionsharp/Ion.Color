@@ -1,8 +1,8 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
-/// <summary>Specifies an <see cref="Illuminant"/> measured with <see cref="Observers.D10"/>.</summary>
+/// <summary>Specifies an <see cref="Illuminant"/> measured with <see cref="ColorObservers.D10"/>.</summary>
 public static class Illuminant10
 {
     /// <summary>Incandescent / tungsten (<see cref="Illuminant">2856</see> K).</summary>

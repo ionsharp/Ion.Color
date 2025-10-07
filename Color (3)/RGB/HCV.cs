@@ -1,28 +1,41 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Hue (H), Chroma (C), Gray (V)</b>
 /// <para>A model that defines color as having hue (H), chroma (C), and gray (V).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="HCV"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="HCV"/></para>
 /// </summary>
 /// <remarks>https://github.com/helixd2s/hcv-color</remarks>
-[Component(360, '°', "H", "Hue"), Component(100, '%', "C", "Chroma"), Component(100, '%', "V", "Gray")]
-[Category(Class.HC), Class(Class.H | Class.HC), Serializable]
+[ColorOf<Lrgb>]
+[Component(360, '°', "H", "Hue")]
+[Component(100, '%', "C", "Chroma")]
+[Component(100, '%', "V", "Gray")]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HC)]
 [Description("A model that defines color as having hue (H), chroma (C), and gray (V).")]
-public class HCV : ColorModel3
+public record class HCV(double H, double C, double V)
+    : Color3<HCV, double>(H, C, V), IColor3<HCV, double>, System.Numerics.IMinMaxValue<HCV>
 {
-    public HCV() : base() { }
+    public static HCV MaxValue => new(360, 100, 100);
 
-    /// <summary>(🗸) <see cref="HCV"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    public static HCV MinValue => new(0);
+
+    public HCV() : this(default, default, default) { }
+
+    public HCV(double hcv) : this(hcv, hcv, hcv) { }
+
+    public HCV(IVector3<double> hcv) : this(hcv.X, hcv.Y, hcv.Z) { }
+
+    /// <summary><see cref="HCV"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
     {
-        double h = Value[0] / 360, c = Value[1] / 100.0, g = Value[2] / 100.0;
+        double h = XYZ.X / 360, c = XYZ.Y / 100.0, g = XYZ.Z / 100.0;
 
         if (c == 0)
-            return Colour.New<Lrgb>(g, g, g);
+            return IColor.New<Lrgb>(g, g, g);
 
         var hi = (h % 1.0) * 6.0;
         var v = hi % 1.0;
@@ -46,7 +59,7 @@ public class HCV : ColorModel3
         }
 
         var mg = (1.0 - c) * g;
-        return Colour.New<Lrgb>
+        return IColor.New<Lrgb>
         (
             c * pure[0] + mg,
             c * pure[1] + mg,
@@ -54,10 +67,10 @@ public class HCV : ColorModel3
         );
     }
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="HCV"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="HCV"/></summary>
+    public override void From(in Lrgb input, ColorProfile profile)
     {
-        double r = input.Value[0], g = input.Value[1], b = input.Value[2];
+        double r = input.XYZ.X, g = input.XYZ.Y, b = input.XYZ.Z;
 
         var max = Max(Max(r, g), b);
         var min = Min(Min(r, g), b);
@@ -86,6 +99,6 @@ public class HCV : ColorModel3
         }
         else hue = 0;
 
-        Value = new(hue * 360, chroma * 100, grayscale * 100);
+        XYZ = new(hue * 360, chroma * 100, grayscale * 100);
     }
 }

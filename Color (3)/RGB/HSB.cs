@@ -1,14 +1,14 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
 
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <para><b>Hue (H), Saturation (S), Brightness (B)</b></para>
 /// <para>A model that defines color as having hue (H), saturation (S), and brightness (B).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="HSB"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="HSB"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -16,19 +16,31 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://github.com/colorjs/color-space/blob/master/hsb.js</remarks>
-[Component(360, '°', "H", "Hue"), Component(100, '%', "S", "Saturation"), Component(100, '%', "B", "Brightness")]
-[Category(Class.HS), Class(Class.H | Class.HS), Serializable]
+[ColorOf<Lrgb>]
+[Component(360, '°', "H", "Hue")]
+[Component(100, '%', "S", "Saturation")]
+[Component(100, '%', "B", "Brightness")]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HS | ComponentGroup.SB)]
 [Description("A model that defines color as having hue (H), saturation (S), and brightness (B).")]
-public class HSB : ColorModel3
+public record class HSB(double H, double S, double B)
+    : Color3<HSB, double>(H, S, B), IColor3<HSB, double>, System.Numerics.IMinMaxValue<HSB>
 {
-    public HSB() : base() { }
+    public static HSB MaxValue => new(360, 100, 100);
 
-    /// <summary>(🗸) <see cref="HSB"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    public static HSB MinValue => new(0);
+
+    public HSB() : this(default, default, default) { }
+
+    public HSB(double hsb) : this(hsb, hsb, hsb) { }
+
+    public HSB(IVector3<double> hsb) : this(hsb.X, hsb.Y, hsb.Z) { }
+
+    /// <summary><see cref="HSB"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
     {
-        var hsb = new Vector(Value[0] / 360, Value[1] / 100, Value[2] / 100);
+        var hsb = new Vector(XYZ.X / 360, XYZ.Y / 100, XYZ.Z / 100);
         if (hsb[1] == 0)
-            return Colour.New<Lrgb>(hsb[2], hsb[2], hsb[2]);
+            return IColor.New<Lrgb>(hsb[2], hsb[2], hsb[2]);
 
         var h = hsb[0] * 6;
         if (h == 6)
@@ -54,13 +66,13 @@ public class HSB : ColorModel3
         else
         { r = hsb[2]; g = x; b = y; }
 
-        return Colour.New<Lrgb>(r, g, b);
+        return IColor.New<Lrgb>(r, g, b);
     }
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="HSB"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="HSB"/></summary>
+    public override void From(in Lrgb input, ColorProfile profile)
     {
-        var max = Colour.Maximum<HSB>(); 
+        var max = (Vector3)MaxValue;
 
         var r = input.X; var g = input.Y; var b = input.Z;
 
@@ -98,6 +110,6 @@ public class HSB : ColorModel3
                 h -= 1;
         }
 
-        Value = new Vector3(h, s, v) * new Vector3(max[0], max[1], max[2]); ;
+        XYZ = new Vector3(h, s, v) * max;
     }
 }

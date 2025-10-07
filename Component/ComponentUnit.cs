@@ -1,6 +1,5 @@
 ﻿using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
-[Serializable]
 public enum ComponentUnit { None, Degrees, Percent }

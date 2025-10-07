@@ -1,106 +1,119 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <para><b>Red (R), Yellow (Y), Blue (B)</b></para>
 /// <para>An additive model where the primary colors 'Red' and 'Blue' are added with the secondary color 'Yellow'.</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="RYB"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="RYB"/></para>
 /// </summary>
 /// <remarks>http://www.deathbysoftware.com/colors/index.html</remarks>
-[Component(255, "R", "Red"), Component(255, "Y", "Yellow"), Component(255, "B", "Blue")]
-[Category(Class.RGB), Serializable]
+[ColorOf<Lrgb>]
+[Component(byte.MaxValue, "R", "Red")]
+[Component(byte.MaxValue, "Y", "Yellow")]
+[Component(byte.MaxValue, "B", "Blue")]
+[ComponentGroup(ComponentGroup.RB)]
 [Description("An additive model where the primary colors 'Red' and 'Blue' are added with the secondary color 'Yellow'.")]
-public class RYB : ColorModel3
+public record class RYB(byte R, byte Y, byte B)
+    : Color3<RYB, byte>(R, Y, B), IColor3<RYB, byte>, System.Numerics.IMinMaxValue<RYB>
 {
-    public RYB() : base() { }
+    public static RYB MaxValue => new(byte.MaxValue);
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="RYB"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
-	{
-		var r = input.X; var g = input.Y; var b = input.Z;
+    public static RYB MinValue => new(byte.MinValue);
 
-		//Remove the white from the color
-		var white = Min(r, Min(g, b));
+    public RYB() : this(default, default, default) { }
 
-		r -= white;
-		g -= white;
-		b -= white;
+    public RYB(byte ryb) : this(ryb, ryb, ryb) { }
 
-		var mG = Max(r, Max(g, b));
+    public RYB(IVector3<byte> ryb) : this(ryb.X, ryb.Y, ryb.Z) { }
 
-		//Get the yellow out of the red/green
-
-		var y = Min(r, g);
-
-		r -= y;
-		g -= y;
-
-		//If blue and green, cut each in half to preserve maximum range
-		if (b > 0 && g > 0)
-		{
-			b /= 2;
-			g /= 2;
-		}
-
-		//Redistribute the remaining green
-		y += g;
-		b += g;
-
-		//Normalize
-		var mY = Max(r, Max(y, b));
-
-		if (mY > 0)
-		{
-			var mN = mG / mY;
-
-			r *= mN;
-			y *= mN;
-			b *= mN;
-		}
-
-		//Add the white back in
-		r += white;
-		y += white;
-		b += white;
-
-		Value = new(Floor(r) * 255, Floor(y) * 255, Floor(b) * 255);
-	}
-
-    /// <summary>(🗸) <see cref="RYB"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="RYB"/></summary>
+    public override void From(in Lrgb input, ColorProfile profile)
     {
-		var r = X; var y = Y; var b = Z;
+        var r = input.X; var g = input.Y; var b = input.Z;
 
-		//Remove the whiteness
-		var white = Min(r, Min(y, b));
-		r -= white; y -= white; b -= white;
+        //Remove the white from the color
+        var white = Min(r, Min(g, b));
 
-		var mY = Max(r, Max(y, b));
+        r -= white;
+        g -= white;
+        b -= white;
 
-		//Get the green out of the yellow/blue
-		var g = Min(y, b);
-		y -= g; b -= g;
+        var mG = Max(r, Max(g, b));
 
-		if (b > 0 && g > 0)
-		{
-			b *= 2.0; g *= 2.0;
-		}
+        //Get the yellow out of the red/green
 
-		//Redistribute the remaining yellow
-		r += y; g += y;
+        var y = Min(r, g);
 
-		//Normalize
-		var mG = Max(r, Max(g, b));
-		if (mG > 0)
-		{
-			var mN = mY / mG;
-			r *= mN; g *= mN; b *= mN;
-		}
+        r -= y;
+        g -= y;
 
-		//Add the white back in
-		r += white; g += white; b += white;
-		return Colour.New<Lrgb>(Floor(r), Floor(g), Floor(b));
-	}
+        //If blue and green, cut each in half to preserve maximum range
+        if (b > 0 && g > 0)
+        {
+            b /= 2;
+            g /= 2;
+        }
+
+        //Redistribute the remaining green
+        y += g;
+        b += g;
+
+        //Normalize
+        var mY = Max(r, Max(y, b));
+
+        if (mY > 0)
+        {
+            var mN = mG / mY;
+
+            r *= mN;
+            y *= mN;
+            b *= mN;
+        }
+
+        //Add the white back in
+        r += white;
+        y += white;
+        b += white;
+
+        XYZ = new Vector3<Double1>(r.Round0(), y.Round0(), b.Round0()).Denormalize<byte>();
+    }
+
+    /// <summary><see cref="RYB"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
+    {
+        var r = X.ToDouble(); var y = Y.ToDouble(); var b = Z.ToDouble();
+
+        //Remove the whiteness
+        var white = Min(r, Min(y, b));
+        r -= white; y -= white; b -= white;
+
+        var mY = Max(r, Max(y, b));
+
+        //Get the green out of the yellow/blue
+        var g = Min(y, b);
+        y -= g; b -= g;
+
+        if (b > 0 && g > 0)
+        {
+            b *= 2.0; g *= 2.0;
+        }
+
+        //Redistribute the remaining yellow
+        r += y; g += y;
+
+        //Normalize
+        var mG = Max(r, Max(g, b));
+        if (mG > 0)
+        {
+            var mN = mY / mG;
+            r *= mN; g *= mN; b *= mN;
+        }
+
+        //Add the white back in
+        r += white; g += white; b += white;
+        return new(r.Round0(), g.Round0(), b.Round0());
+    }
 }

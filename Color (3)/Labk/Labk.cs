@@ -1,63 +1,74 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
-using static Imagin.Core.Numerics.M;
-using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Perceived lightness (L), Red/green (a), Blue/yellow (b)</b>
 /// <para>A model that defines color as having perceived lightness (L), red/green (a), and blue/yellow (b).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="Labk"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="Labk"/></para>
 /// </summary>
 /// <remarks>https://colour.readthedocs.io/en/develop/_modules/colour/models/oklab.html</remarks>
-[Component(1, '°', "L", "Perceived lightness"), Component(1, '%', "a", "Red/green"), Component(1, '%', "b", "Blue/yellow")]
-[Category(Class.Labk), Hide, Serializable]
+[ColorOf<XYZ>]
+[Component(1, '°', "L", "Perceived lightness")]
+[Component(1, '%', "a", "Red/green")]
+[Component(1, '%', "b", "Blue/yellow")]
+[ComponentGroup(ComponentGroup.Lightness | ComponentGroup.AB)]
 [Description("A model that defines color as having perceived lightness (L), red/green (a), and blue/yellow (b).")]
-public class Labk : ColorModel3<XYZ>
+[Hide]
+public record class Labk(double L, double A, double B)
+    : Color3<Labk, double, XYZ>(L, A, B), IColor3<Labk, double>, System.Numerics.IMinMaxValue<Labk>
 {
-    public Labk() : base() { }
+    public static Labk MaxValue => new(1);
 
-    public static Matrix XYZ_LMS => new double[][]
+    public static Labk MinValue => new(0);
+
+    public Labk() : this(default, default, default) { }
+
+    public Labk(double lab) : this(lab, lab, lab) { }
+
+    public Labk(IVector3<double> lab) : this(lab.X, lab.Y, lab.Z) { }
+
+    public static Matrix3x3<double> XYZ_LMS => new
+    (
+        0.8189330101, 0.3618667424, -0.1288597137,
+        0.0329845436, 0.9293118715, 0.0361456387,
+        0.0482003018, 0.2643662691, 0.6338517070
+    );
+    public static Matrix3x3<double> LMS_XYZ => (XYZ_LMS as IMatrix3x3<double>).Invert();
+
+    public static Matrix3x3<double> LMS_LAB => new
+    (
+        0.2104542553, 0.7936177850, -0.0040720468,
+        1.9779984951, -2.4285922050, 0.4505937099,
+        0.0259040371, 0.7827717662, -0.8086757660
+    );
+    public static Matrix3x3<double> LAB_LMS => (LMS_LAB as IMatrix3x3<double>).Invert();
+
+    /// <summary><see cref="XYZ"/> ⇒ <see cref="Labk"/></summary>
+    public override void From(in XYZ input, ColorProfile profile)
     {
-        new[] { 0.8189330101, 0.3618667424, -0.1288597137 },
-        new[] { 0.0329845436, 0.9293118715,  0.0361456387 },
-        new[] { 0.0482003018, 0.2643662691,  0.6338517070 },
-    };
-    public static Matrix LMS_XYZ => XYZ_LMS.Invert3By3();
+        var v = input.XYZ.Do(Operator.Divide, (XYZ)(xyY)(XY)profile.Chromacity);
+        var q = IColor.New<XYZ>(v.X, v.Y, v.Z);
 
-    public static Matrix LMS_LAB => new double[][]
-    {
-        new[] { 0.2104542553,  0.7936177850, -0.0040720468 },
-        new[] { 1.9779984951, -2.4285922050,  0.4505937099 },
-        new[] { 0.0259040371,  0.7827717662, -0.8086757660 },
-    };
-    public static Matrix LAB_LMS => LMS_LAB.Invert3By3();
+        var lms = XYZ_LMS * q.XYZ;
+        var lmsPrime = lms.Root3();
 
-    /// <summary>(🗸) <see cref="XYZ"/> > <see cref="Labk"/></summary>
-    public override void From(XYZ input, WorkingProfile profile)
-    {
-        var v = input.Value / (XYZ)(xyY)(xy)profile.Chromacity;
-        input = Colour.New<XYZ>(v[0], v[1], v[2]);
-
-        var lms = XYZ_LMS.Multiply(input);
-        var lmsPrime = Colour.New<LMS>(Cbrt(lms[0]), Cbrt(lms[1]), Cbrt(lms[2]));
-
-        var lab = LMS_LAB.Multiply(lmsPrime);
-        Value = new(lab[0], lab[1], lab[2]);
+        var lab = LMS_LAB * lmsPrime;
+        XYZ = new(lab);
     }
 
-    /// <summary>(🗸) <see cref="Labk"/> > <see cref="XYZ"/></summary>
-    public override void To(out XYZ result, WorkingProfile profile)
+    /// <summary><see cref="Labk"/> ⇒ <see cref="XYZ"/></summary>
+    public override void To(out XYZ result, ColorProfile profile)
     {
-        var lab = Value;
+        var lab = XYZ;
 
-        var lms = LAB_LMS.Multiply(lab);
-        var lmsPrime = new Vector(Pow(lms[0], 3), Pow(lms[1], 3), Pow(lms[2], 3));
+        var lms = LAB_LMS * lab;
+        var lmsPrime = lms.Pow3();
 
-        var xyz = LMS_XYZ.Multiply(lmsPrime);
-        xyz = new(xyz * profile.Chromacity);
+        var xyz = LMS_XYZ * lmsPrime;
+        xyz = new Vector3<double>(profile.Chromacity * xyz);
 
-        result = Colour.New<XYZ>(xyz[0], xyz[1], xyz[2]);
+        result = IColor.New<XYZ>(xyz);
     }
 }

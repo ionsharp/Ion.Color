@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <para><b>Lightness (L), Red/green (a), Yellow/blue (b)</b></para>
 /// <para>A model that defines color as having lightness (L), red/green (a), and yellow/blue (b).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="Labj"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="Labj"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -15,12 +16,24 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://observablehq.com/@jrus/jzazbz</remarks>
-[Component(.0, 1, '%', "L", "Lightness"), Component(-1, 1, '%', "a", "Red/green"), Component(-1, 1, '%', "b", "Yellow/blue")]
-[Category(Class.Lab), Serializable]
+[ColorOf<XYZ>]
+[Component(.0, 1, '%', "L", "Lightness")]
+[Component(-1, 1, '%', "a", "Red/green")]
+[Component(-1, 1, '%', "b", "Yellow/blue")]
+[ComponentGroup(ComponentGroup.Lightness | ComponentGroup.AB)]
 [Description("A model that defines color as having lightness (L), red/green (a), and yellow/blue (b).")]
-public class Labj : ColorModel3<XYZ>
+public record class Labj(double L, double A, double B)
+    : Color3<Labj, double, XYZ>(L, A, B), IColor3<Labj, double>, System.Numerics.IMinMaxValue<Labj>
 {
-    public Labj() : base() { }
+    public static Labj MaxValue => new(1);
+
+    public static Labj MinValue => new(0, -1, -1);
+
+    public Labj() : this(default, default, default) { }
+
+    public Labj(double lab) : this(lab, lab, lab) { }
+
+    public Labj(IVector3<double> lab) : this(lab.X, lab.Y, lab.Z) { }
 
     static double PerceptualQuantizer(double x)
     {
@@ -36,8 +49,8 @@ public class Labj : ColorModel3<XYZ>
         return result;
     }
 
-    /// <summary>(🗸) <see cref="XYZ"/> > <see cref="Labj"/></summary>
-    public override void From(XYZ input, WorkingProfile profile)
+    /// <summary><see cref="XYZ"/> ⇒ <see cref="Labj"/></summary>
+    public override void From(in XYZ input, ColorProfile profile)
     {
         var X = input.X * 10000d; var Y = input.Y * 10000d; var Z = input.Z * 10000d;
 
@@ -51,15 +64,15 @@ public class Labj : ColorModel3<XYZ>
         var bz = 0.199076 * Lp + 1.096799 * Mp - 1.295875 * Sp;
         var Jz = 0.44 * Iz / (1 - 0.56 * Iz) - 1.6295499532821566e-11;
 
-        Value = new(Jz, az, bz);
+        XYZ = new(Jz, az, bz);
     }
 
-    /// <summary>(🗸) <see cref="Labj"/> > <see cref="XYZ"/></summary>
-    public override void To(out XYZ result, WorkingProfile profile)
+    /// <summary><see cref="Labj"/> ⇒ <see cref="XYZ"/></summary>
+    public override void To(out XYZ result, ColorProfile profile)
     {
-        var Jz = Value[0]; var az = Value[1]; var bz = Value[2];
+        var Jz = XYZ.X; var az = XYZ.Y; var bz = XYZ.Z;
 
-        Jz = Jz + 1.6295499532821566e-11;
+        Jz += 1.6295499532821566e-11;
         var Iz = Jz / (0.44 + 0.56 * Jz);
 
         var L = PerceptualQuantizerInverse(Iz + 1.386050432715393e-1 * az + 5.804731615611869e-2 * bz);
@@ -70,6 +83,6 @@ public class Labj : ColorModel3<XYZ>
         var Y = -3.250758740427037e-01 * L + 1.571847038366936e+00 * M - 2.182538318672940e-01 * S;
         var Z = -9.098281098284756e-02 * L - 3.127282905230740e-01 * M + 1.522766561305260e+00 * S;
 
-        result = Colour.New<XYZ>(X / 10000d, Y / 10000d, Z / 10000d);
+        result = IColor.New<XYZ>(X / 10000d, Y / 10000d, Z / 10000d);
     }
 }

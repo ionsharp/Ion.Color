@@ -1,32 +1,43 @@
-﻿using Imagin.Core.Linq;
-using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
 
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Hue (H), Saturation (S), Percieved brightness (P)</b>
 /// <para>A model that defines color as having hue (H), saturation (S), and percieved brightness (P).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="HSP"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="HSP"/></para>
 /// </summary>
 /// <remarks>https://github.com/colorjs/color-space/blob/master/hsp.js</remarks>
-[Component(360, '°', "H", "Hue"), Component(100, '%', "S", "Saturation"), Component(255, ' ', "P", "Percieved brightness")]
-[Category(Class.HS), Class(Class.H | Class.HS), Serializable]
+[ColorOf<Lrgb>]
+[Component(360, '°', "H", "Hue")]
+[Component(100, '%', "S", "Saturation")]
+[Component(255, ' ', "P", "Percieved brightness")]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HS)]
 [Description("A model that defines color as having hue (H), saturation (S), and percieved brightness (P).")]
-public class HSP : ColorModel3
+public record class HSP(double H, double S, double P)
+    : Color3<HSP, double>(H, S, P), IColor3<HSP, double>, System.Numerics.IMinMaxValue<HSP>
 {
-    public HSP() : base() { }
+    public static HSP MaxValue => new(360, 100, 255);
 
-    /// <summary>(🗸) <see cref="HSP"/> > <see cref="Lrgb"/></summary>
-    public override Lrgb To(WorkingProfile profile)
+    public static HSP MinValue => new(0);
+
+    public HSP() : this(default, default, default) { }
+
+    public HSP(double hsp) : this(hsp, hsp, hsp) { }
+
+    public HSP(IVector3<double> hsp) : this(hsp.X, hsp.Y, hsp.Z) { }
+
+    /// <summary><see cref="HSP"/> ⇒ <see cref="Lrgb"/></summary>
+    public override Lrgb To(ColorProfile profile)
     {
         const double Pr = 0.299;
         const double Pg = 0.587;
         const double Pb = 0.114;
 
-        double h = Value[0] / 360.0, s = Value[1] / 100.0, p = Value[2];
+        double h = XYZ.X / 360.0, s = XYZ.Y / 100.0, p = XYZ.Z;
 
         double r, g, b, part, minOverMax = 1.0 - s;
 
@@ -138,21 +149,21 @@ public class HSP : ColorModel3
                 g = 0.0;
             }
         }
-        return Colour.New<Lrgb>(r.Round() / 255.0, g.Round() / 255.0, b.Round() / 255.0);
+        return IColor.New<Lrgb>(r.Round() / 255.0, g.Round() / 255.0, b.Round() / 255.0);
     }
 
-    /// <summary>(🗸) <see cref="Lrgb"/> > <see cref="HSP"/></summary>
-    public override void From(Lrgb input, WorkingProfile profile)
+    /// <summary><see cref="Lrgb"/> ⇒ <see cref="HSP"/></summary>
+    public override void From(in Lrgb input, ColorProfile profile)
     {
         const double Pr = 0.299;
         const double Pg = 0.587;
         const double Pb = 0.114;
 
-        var _input = input.Value * 255;
-        double r = _input[0], g = _input[1], b = _input[2];
-        double h = 0, s = 0, p = 0;
+        var _input = input.XYZ.Do(Operator.Multiply, 255);
+        double r = _input.X, g = _input.Y, b = _input.Z;
+        double h = 0, s = 0;
 
-        p = Sqrt(r * r * Pr + g * g * Pg + b * b * Pb);
+        var p = Sqrt(r * r * Pr + g * g * Pg + b * b * Pb);
 
         if (r == g && r == b)
         {
@@ -206,6 +217,6 @@ public class HSP : ColorModel3
                 }
             }
         }
-        Value = new((h * 360.0).Round(), s * 100.0, p.Round());
+        XYZ = new((h * 360.0).Round(), s * 100.0, p.Round());
     }
 }

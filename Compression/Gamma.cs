@@ -1,37 +1,41 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
+using System.Globalization;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary><b>Gamma</b></summary>
-[Name(name), Index(1), Serializable]
-[Description("")]
-public struct GammaCompression : ICompress
+[Name(Name)]
+public readonly record struct GammaCompression() : ICompress
 {
-    const string name = "Gamma";
+    public const string Name = "Gamma";
 
-    [Index(-1), ReadOnly, Show]
-    public string Name => name;
+    public const string StringFormat = "{0} ({1})";
 
-    public double Gamma { get; private set; } = 2.4;
-
-    public GammaCompression() { }
+    public readonly double Gamma { get; } = 2.4;
 
     public GammaCompression(double gamma) : this() => Gamma = gamma;
 
-    public double Transfer(double channel)
+    public readonly double Transfer(double channel)
     {
         var v = channel;
         var V = Pow(v, 1 / Gamma);
         return V;
     }
 
-    public double TransferInverse(double channel)
+    public readonly double TransferInverse(double channel)
     {
         var V = channel;
         var v = Pow(V, Gamma);
         return v;
     }
 
-    public override string ToString() => $"{name} ({Gamma})";
+    /// <see cref="IFormattable"/>
+
+    public readonly override string ToString() => ToString(NumberFormat.General, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format) => ToString(format, CultureInfo.CurrentCulture);
+
+    public readonly string ToString(string format, IFormatProvider provider) => StringFormat.F(Name, Gamma);
 }

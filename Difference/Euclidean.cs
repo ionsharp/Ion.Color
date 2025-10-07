@@ -1,24 +1,23 @@
-﻿using System;
+﻿using Ion.Numeral;
 using static System.Math;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>Euclidean distance between two colors.</summary>
 /// <remarks>https://github.com/tompazourek/Colourful</remarks>
-[Name("Euclidean"), Serializable]
-public sealed class EuclideanColorDifference : IColorDifference<ColorModel3>, IColorDifference
+[Name("Euclidean")]
+public sealed record class EuclideanColorDifference() : IColorDifference<IColor>, IColorDifference
 {
-    public EuclideanColorDifference() { }
-
-    public double ComputeDifference(in ColorModel3 x, in ColorModel3 y)
+    /// <inheritdoc/>
+    public double ComputeDifference(in IColor x, in IColor y)
     {
         var distanceSquared = 0d;
-        var vectorSize = Min(x.Length, y.Length);
+        var vectorSize = Min(IVector3.Length, IVector3.Length);
 
         for (var i = 0; i < vectorSize; i++)
         {
-            var xi = x.Value[i];
-            var yi = y.Value[i];
+            var xi = x.ToArray()[i];
+            var yi = y.ToArray()[i];
 
             var xyiDiff = xi - yi;
             distanceSquared += xyiDiff * xyiDiff;
@@ -27,5 +26,6 @@ public sealed class EuclideanColorDifference : IColorDifference<ColorModel3>, IC
         return Sqrt(distanceSquared);
     }
 
-    double IColorDifference.ComputeDifference(in ColorModel x, in ColorModel y) => ComputeDifference((ColorModel3)x, (ColorModel3)y);
+    /// <inheritdoc/>
+    double IColorDifference.ComputeDifference(in IColor x, in IColor y) => ComputeDifference((IColor3)x, (IColor3)y);
 }

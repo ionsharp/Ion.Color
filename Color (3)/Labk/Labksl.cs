@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Ion.Numeral;
+using System;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>Hue (H), Saturation (S), Lightness (L)</b>
 /// <para>A model derived from 'Labk' that defines color as having hue (H), saturation (S), and lightness (L).</para>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="XYZ"/> > <see cref="Labk"/> > <see cref="Labksl"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="XYZ"/> ⇒ <see cref="Labk"/> ⇒ <see cref="Labksl"/></para>
 /// 
 /// <i>Alias</i>
 /// <list type="bullet">
@@ -14,16 +15,31 @@ namespace Imagin.Core.Colors;
 /// </list>
 /// </summary>
 /// <remarks>https://colour.readthedocs.io/en/develop/_modules/colour/models/oklab.html</remarks>
-[Component(360, '°', "H", "Hue"), Component(100, '%', "S", "Saturation"), Component(100, '%', "L", "Lightness")]
-[Category(Class.Labk), Hide, Serializable]
+[ColorOf<Labk>]
+[Component(360, '°', "H", "Hue")]
+[Component(100, '%', "S", "Saturation")]
+[Component(100, '%', "L", "Lightness")]
+[ComponentGroup(ComponentGroup.H | ComponentGroup.HS | ComponentGroup.Lightness | ComponentGroup.SL)]
 [Description("A model derived from 'Labk' that defines color as having hue (H), saturation (S), and lightness (L).")]
-public class Labksl : ColorModel3<Labk>
+[Hide]
+public record class Labksl(double H, double S, double L)
+    : Color3<Labksl, double, Labk>(H, S, L), IColor3<Labksl, double>, System.Numerics.IMinMaxValue<Labksl>
 {
-    public Labksl() : base() { }
+    public static Labksl MaxValue => new(360, 100, 100);
 
-    /// <summary>(🞩) <see cref="Labk"/> > <see cref="Labksl"/></summary>
-    public override void From(Labk input, WorkingProfile profile) { }
+    public static Labksl MinValue => new(0);
 
-    /// <summary>(🞩) <see cref="Labksl"/> > <see cref="Labk"/></summary>
-    public override void To(out Labk result, WorkingProfile profile) => result = new();
+    public Labksl() : this(default, default, default) { }
+
+    public Labksl(double hsl) : this(hsl, hsl, hsl) { }
+
+    public Labksl(IVector3<double> hsl) : this(hsl.X, hsl.Y, hsl.Z) { }
+
+    /// <summary><see cref="Labk"/> ⇒ <see cref="Labksl"/></summary>
+    [NotComplete]
+    public override void From(in Labk input, ColorProfile profile) { }
+
+    /// <summary><see cref="Labksl"/> ⇒ <see cref="Labk"/></summary>
+    [NotComplete]
+    public override void To(out Labk result, ColorProfile profile) => result = new();
 }

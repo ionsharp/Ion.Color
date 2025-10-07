@@ -1,34 +1,40 @@
-﻿using Imagin.Core.Numerics;
+﻿using Ion.Numeral;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Imagin.Core.Colors;
+namespace Ion.Colors;
 
 /// <summary>
 /// <b>rg</b>
-/// <para><see cref="RGB"/> > <see cref="Lrgb"/> > <see cref="rg"/></para>
+/// <para><see cref="RGB"/> ⇒ <see cref="Lrgb"/> ⇒ <see cref="rgG"/> ⇒ <see cref="RG"/></para>
 /// </summary>
 /// <remarks>https://en.wikipedia.org/wiki/Rg_chromaticity</remarks>
-[Component(1, "r"), Component(1, "g")]
-[Hide, Serializable]
-[SuppressMessage("Style", "IDE1006:Naming Styles")]
-public class rg : ColorModel2<rgG>
+[Component(1, "r")]
+[Component(1, "g")]
+[Hide]
+public record class RG(Double1 R, Double1 G)
+    : Color2<RG, Double1, rgG>(R, G), IColor2<RG, Double1>, System.Numerics.IMinMaxValue<RG>
 {
-    public rg() : base() { }
+    public static RG MaxValue => new(Double1.MaxValue);
 
-    ///
+    public static RG MinValue => new(Double1.MinValue);
 
-    public static explicit operator rg(Vector2 input) => Colour.New<rg>(input);
+    public RG() : this(default, default) { }
 
-    public static explicit operator rg(rgG input) => Colour.New<rg>(input.XY);
+    public RG(Double1 rg) : this(rg, rg) { }
 
-    ///
+    public RG(in IVector2<Double1> rg) : this(rg.X, rg.Y) { }
 
-    /// <summary>(🗸) <see cref="rgG"/> > <see cref="rg"/></summary>
-    public override void From(rgG input, WorkingProfile profile)
-        => Value = input.XY;
+    public static explicit operator RG(Vector2 input) => IColor.New<RG>(input);
 
-    /// <summary>(🗸) <see cref="rg"/> > <see cref="rgG"/></summary>
-    public override void To(out rgG result, WorkingProfile profile)
-        => result = Colour.New<rgG>(X, Y, 1);
+    public static explicit operator RG(rgG input) => new(input.XY);
+
+    /// <see cref="IConvert{rgG}"/>
+
+    /// <summary><see cref="rgG"/> ⇒ <see cref="RG"/></summary>
+    public override void From(in rgG i, ColorProfile profile)
+        => XY = i.XYZ.XY;
+
+    /// <summary><see cref="RG"/> ⇒ <see cref="rgG"/></summary>
+    public override void To(out rgG i, ColorProfile profile)
+        => i = new(X, Y);
 }
