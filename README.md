@@ -111,7 +111,6 @@ Illuminants
 [Nuget](https://www.nuget.org/packages/Ion.Color/)
 ---
 ### Quick install
-##### Ion.Color
 > _`Install-Package Ion.Color -Version *.0.0`_
 
 [Learn more...](https://github.com/ionsharp/Ion.Color/wiki)
