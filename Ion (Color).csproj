@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <LangVersion>preview</LangVersion>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
   </PropertyGroup>
   
   <PropertyGroup>
     <Authors>Ion</Authors>
     <Company>Ion</Company>
     <Copyright>No rights reserved.</Copyright>
-    <Description>Common elements for color management.</Description>
+    <Description></Description>
     <NeutralLanguage>en</NeutralLanguage>
     <RepositoryUrl>https://github.com/ionsharp/</RepositoryUrl>
   </PropertyGroup>
@@ -16,17 +16,18 @@
   <PropertyGroup>
     <AssemblyName>Ion.Color</AssemblyName>
     <AssemblyTitle>Ion.Color</AssemblyTitle>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <RootNamespace>Ion.Colors</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Version>1.0.0.0</Version>
   </PropertyGroup>
   
   <PropertyGroup>
     <NoWarn>MSB3290;NU1701;8509;8524;8600;8601;8604;8625</NoWarn>
+    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -47,6 +48,7 @@
     <None Remove=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="EntityFramework" Version="6.5.1" />
     <PackageReference Include="InheritDoc" Version="2.5.2">
       <NoWarn>NU1701</NoWarn>
     </PackageReference>
